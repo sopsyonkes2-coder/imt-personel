@@ -41,17 +41,28 @@ export default function App() {
     return "PROGRAM PENURUNAN BB";
   };
 
+  // REFERENSI UTAMA DARI RUMUS SPREADSHEET ANDA
+  // IF(G10:G-(24.5*((F10:F/100)^2))>0 ; G10:G-(24.5*((F10:F/100)^2)) ; 0)
+  const hitungKelebihanBB = () => {
+    if (!form.tb || !form.bb) return 0;
+    const tmMeter = form.tb / 100;
+    const bbMaksimalNormal = 24.5 * (tmMeter * tmMeter); // Batas aman IMT 24.5
+    const selisih = form.bb - bbMaksimalNormal;
+    return selisih > 0 ? selisih.toFixed(1) : 0;
+  };
+
   const kataPenyemangat = () => {
     const klas = klasifikasi();
+    const overKg = hitungKelebihanBB();
     switch (klas) {
       case "NORMAL":
         return "LUAR BIASA! PERTAHANKAN FISIK PRIMA ANDA UNTUK SELALU SIAP MENJALANKAN TUGAS POKOK SATUAN!";
       case "UNDERWEIGHT":
         return "TETAP SEMANGAT! TINGKATKAN ASUPAN NUTRISI DAN LATIHAN BEBAN AGAR MENCAPAI BERAT BADAN IDEAL PRAJURIT.";
       case "OVERWEIGHT":
-        return "SIAP BINA FISIK! TINGKATKAN INTENSITAS KARDIO, KURANGI PORSINYA, DAN KEMBALIKAN POSTUR IDEALMU.";
+        return `SIAP BINA FISIK! ANDA MEMILIKI KELEBIHAN SEKITAR ${overKg} KG. TINGKATKAN INTENSITAS KARDIO, KURANGI PORSINYA, DAN KEMBALIKAN POSTUR IDEALMU.`;
       case "OBESITAS":
-        return "PERINTAH KOMANDO: JAGA KESEHATAN, JALANKAN PROGRAM PENURUNAN BB SECARA DISIPLIN DAN TERUKUR. ANDA PASTI BISA!";
+        return `PERINTAH KOMANDO: JAGA KESEHATAN, ANDA HARUS MENURUNKAN BERAT BADAN MINIMAL ${overKg} KG. JALANKAN PROGRAM PENURUNAN BB SECARA DISIPLIN DAN TERUKUR. ANDA PASTI BISA!`;
       default:
         return "";
     }
@@ -236,6 +247,19 @@ export default function App() {
                 <h3 style={styles.resultHeader}>STATUS</h3>
                 <p style={styles.resultText}>{status()}</p>
               </div>
+
+              {/* INTEGRASI KOTAK BARU KELEBIHAN BB */}
+              {parseFloat(hitungKelebihanBB()) > 0 && (
+                <div style={{
+                  ...styles.resultItem,
+                  background: "rgba(212, 175, 55, 0.23)",
+                  border: "1px solid #d4af37",
+                  boxShadow: "0 0 10px rgba(212, 175, 55, 0.1)"
+                }}>
+                  <h3 style={{...styles.resultHeader, color: "#e5c158"}}>KELEBIHAN BB</h3>
+                  <p style={{...styles.resultText, color: "#e5c158"}}>{hitungKelebihanBB()} KG</p>
+                </div>
+              )}
             </div>
 
             <div style={{
@@ -357,7 +381,8 @@ const styles = {
   resultBox: {
     marginTop: "30px",
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", 
+    // Otomatis menyesuaikan jumlah kolom (grid-items) biar simetris saat kotak ke-4 muncul
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", 
     gap: "20px"
   },
   resultItem: {
