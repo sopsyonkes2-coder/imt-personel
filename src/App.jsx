@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 export default function App() {
-
   const [showResult, setShowResult] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     nama: "",
@@ -14,243 +14,376 @@ export default function App() {
   });
 
   const handleChange = (e) => {
-
     setForm({
       ...form,
       [e.target.name]: e.target.value
     });
-
     setShowResult(false);
   };
 
   const hitungIMT = () => {
-
     if (!form.tb || !form.bb) return 0;
-
-    return (
-      form.bb /
-      ((form.tb / 100) * (form.tb / 100))
-    ).toFixed(2);
+    return (form.bb / ((form.tb / 100) * (form.tb / 100))).toFixed(2);
   };
 
   const klasifikasi = () => {
-
     const imt = parseFloat(hitungIMT());
-
     if (imt < 18.5) return "UNDERWEIGHT";
     if (imt <= 24.5) return "NORMAL";
     if (imt <= 30) return "OVERWEIGHT";
-
     return "OBESITAS";
   };
 
   const status = () => {
-
     const klas = klasifikasi();
-
     if (klas === "NORMAL") return "MEMENUHI";
     if (klas === "OVERWEIGHT") return "PEMBINAAN";
-
     return "PROGRAM PENURUNAN BB";
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Mencegah reload halaman & mengaktifkan validasi 'required' browser
+    setLoading(true);
 
-    const formElement = document.getElementById("imtForm");
+    const SPREADSHEET_URL = "https://script.google.com/macros/s/AKfycbztod5urUj4ol4IUqDFgQ4tl7xuW-lE_laMzc8YHr5UAdNGGKSTYMq5YCFwu9dTke4p5A/exec";
 
-    formElement.submit();
+    try {
+      // Mengirimkan data dengan fetch API agar validasi form wajib isi berjalan sempurna
+      await fetch(SPREADSHEET_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama: form.nama.toUpperCase(),
+          pangkat: form.pangkat,
+          nrp: form.nrp,
+          jabatan: form.jabatan.toUpperCase(),
+          tb: form.tb,
+          bb: form.bb,
+          imt: hitungIMT(),
+          status: status()
+        })
+      });
 
-    setShowResult(true);
+      setShowResult(true);
+    } catch (error) {
+      console.error("Gagal mengirim data:", error);
+      alert("TERJADI KESALAHAN JARINGAN! DATA GAGAL TERKIRIM.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={styles.body}>
-
       <div style={styles.card}>
+        
+        {/* LOGO SATUAN YONKES 2 KOSTRAD */}
+        <img 
+          src="/logo.png" 
+          alt="Logo Yonkes 2" 
+          style={styles.logo} 
+          onError={(e) => {
+            // Jika file logo.png belum dimasukkan ke folder public, gambar rusak otomatis disembunyikan
+            e.target.style.display = 'none';
+          }}
+        />
 
-        <h1 style={styles.title}>
-          APLIKASI IMT PERSONEL
-        </h1>
+        <h1 style={styles.title}>APLIKASI IMT PERSONEL</h1>
+        <p style={styles.subtitle}>SOPS YONKES 2/YBH/2 KOSTRAD</p>
 
-        <p style={styles.subtitle}>
-          YONKES 2/YBH/2 KOSTRAD
-        </p>
-
-        <form
-          id="imtForm"
-          action="https://script.google.com/macros/s/AKfycbztod5urUj4ol4IUqDFgQ4tl7xuW-lE_laMzc8YHr5UAdNGGKSTYMq5YCFwu9dTke4p5A/exec"
-          method="POST"
-          target="hidden_iframe"
-        >
-
+        {/* RE-ARSITEKTUR FORM DENGAN VALIDASI WAJIB ISI */}
+        <form id="imtForm" onSubmit={handleSubmit}>
           <div style={styles.grid}>
+            
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>NAMA LENGKAP *</label>
+              <input
+                name="nama"
+                type="text"
+                placeholder="Nama Lengkap"
+                value={form.nama}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+            </div>
 
-            <input
-              name="nama"
-              placeholder="Nama"
-              value={form.nama}
-              onChange={handleChange}
-              style={styles.input}
-            />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>PANGKAT *</label>
+              <select
+                name="pangkat"
+                value={form.pangkat}
+                onChange={handleChange}
+                style={styles.select}
+                required
+              >
+                <option value="">-- Pilih Pangkat --</option>
+                <optgroup label="PERWIRA TINGGI">
+                  <option value="JENDERAL">JENDERAL</option>
+                  <option value="LETJEN">LETJEN</option>
+                  <option value="MAYJEN">MAYJEN</option>
+                  <option value="BRIGJEN">BRIGJEN</option>
+                </optgroup>
+                <optgroup label="PERWIRA MENENGAH">
+                  <option value="KOLONEL">KOLONEL</option>
+                  <option value="LETKOL">LETKOL</option>
+                  <option value="MAYOR">MAYOR</option>
+                </optgroup>
+                <optgroup label="PERWIRA PERTAMA">
+                  <option value="KAPTEN">KAPTEN</option>
+                  <option value="LETTU">LETTU</option>
+                  <option value="LETDA">LETDA</option>
+                </optgroup>
+                <optgroup label="BINTARA TINGGI">
+                  <option value="PELTU">PELTU</option>
+                  <option value="PELDA">PELDA</option>
+                </optgroup>
+                <optgroup label="BINTARA">
+                  <option value="SERMA">SERMA</option>
+                  <option value="SERKA">SERKA</option>
+                  <option value="SERTU">SERTU</option>
+                  <option value="SERDA">SERDA</option>
+                </optgroup>
+                <optgroup label="TAMTAMA KEPALA">
+                  <option value="KOPKA">KOPKA</option>
+                  <option value="KOPTU">KOPTU</option>
+                  <option value="KOPDA">KOPDA</option>
+                </optgroup>
+                <optgroup label="TAMTAMA">
+                  <option value="PRAKA">PRAKA</option>
+                  <option value="PRATU">PRATU</option>
+                  <option value="PRADA">PRADA</option>
+                </optgroup>
+              </select>
+            </div>
 
-            <input
-              name="pangkat"
-              placeholder="Pangkat"
-              value={form.pangkat}
-              onChange={handleChange}
-              style={styles.input}
-            />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>NRP *</label>
+              <input
+                name="nrp"
+                type="text"
+                placeholder="NRP"
+                value={form.nrp}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+            </div>
 
-            <input
-              name="nrp"
-              placeholder="NRP"
-              value={form.nrp}
-              onChange={handleChange}
-              style={styles.input}
-            />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>JABATAN *</label>
+              <input
+                name="jabatan"
+                type="text"
+                placeholder="Jabatan"
+                value={form.jabatan}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+            </div>
 
-            <input
-              name="jabatan"
-              placeholder="Jabatan"
-              value={form.jabatan}
-              onChange={handleChange}
-              style={styles.input}
-            />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>TINGGI BADAN (CM) *</label>
+              <input
+                type="number"
+                name="tb"
+                placeholder="Tinggi Badan (cm)"
+                value={form.tb}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+            </div>
 
-            <input
-              type="number"
-              name="tb"
-              placeholder="Tinggi Badan (cm)"
-              value={form.tb}
-              onChange={handleChange}
-              style={styles.input}
-            />
-
-            <input
-              type="number"
-              name="bb"
-              placeholder="Berat Badan (kg)"
-              value={form.bb}
-              onChange={handleChange}
-              style={styles.input}
-            />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>BERAT BADAN (KG) *</label>
+              <input
+                type="number"
+                name="bb"
+                placeholder="Berat Badan (kg)"
+                value={form.bb}
+                onChange={handleChange}
+                style={styles.input}
+                required
+              />
+            </div>
 
           </div>
 
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? "MENGIRIM DATA..." : "CEK IMT & SIMPAN DATA"}
+          </button>
         </form>
 
-        <iframe
-          name="hidden_iframe"
-          style={{ display: "none" }}
-        />
-
-        <button
-          onClick={handleSubmit}
-          style={styles.button}
-        >
-          CEK IMT
-        </button>
-
+        {/* PANEL HASIL RESPONSIVE */}
         {showResult && (
-
           <div style={styles.resultBox}>
-
             <div style={styles.resultItem}>
-              <h3>IMT</h3>
-              <p>{hitungIMT()}</p>
+              <h3 style={styles.resultHeader}>IMT</h3>
+              <p style={styles.resultText}>{hitungIMT()}</p>
             </div>
 
             <div style={styles.resultItem}>
-              <h3>KLASIFIKASI</h3>
-              <p>{klasifikasi()}</p>
+              <h3 style={styles.resultHeader}>KLASIFIKASI</h3>
+              <p style={styles.resultText}>{klasifikasi()}</p>
             </div>
 
-            <div style={styles.resultItem}>
-              <h3>STATUS</h3>
-              <p>{status()}</p>
+            <div style={{
+              ...styles.resultItem,
+              background: klasifikasi() === "NORMAL" ? "rgba(31, 122, 79, 0.4)" : "rgba(196, 43, 43, 0.4)",
+              border: klasifikasi() === "NORMAL" ? "1px solid #1f7a4f" : "1px solid #c42b2b"
+            }}>
+              <h3 style={styles.resultHeader}>STATUS</h3>
+              <p style={styles.resultText}>{status()}</p>
             </div>
-
           </div>
         )}
 
-      </div>
+        {/* FOOTER COPYRIGHT SOPS YONKES 2 */}
+        <div style={styles.footer}>
+          © 2026 SOPS YONKES 2/YBH/2 KOSTRAD. ALL RIGHTS RESERVED.
+        </div>
 
+      </div>
     </div>
   );
 }
 
+// ARSITEKTUR LAYOUT MODERN MILITARY (FULL RESPONSIVE PC & MOBILE)
 const styles = {
-
   body: {
     minHeight: "100vh",
-    background: "linear-gradient(135deg,#07140d,#10271b,#183c29)",
+    background: "linear-gradient(135deg, #0a120d, #13281c, #1f3d2b, #0b1710)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "20px",
-    fontFamily: "Arial"
+    padding: "4vw 20px", 
+    fontFamily: '"Courier New", Courier, monospace, sans-serif', // Gaya display tactical monitor
+    boxSizing: "border-box"
   },
-
   card: {
     width: "100%",
-    maxWidth: "900px",
-    background: "rgba(255,255,255,0.08)",
-    backdropFilter: "blur(14px)",
-    borderRadius: "30px",
-    padding: "40px",
-    border: "1px solid rgba(255,255,255,0.08)"
+    maxWidth: "850px",
+    background: "rgba(15, 27, 20, 0.92)",
+    borderRadius: "20px",
+    padding: "clamp(20px, 4vw, 40px)", // Fleksibel: mengecil di HP, melebar di PC
+    border: "2px solid #3c6346",
+    boxShadow: "0 0 25px rgba(0, 255, 80, 0.15)",
+    boxSizing: "border-box"
   },
-
+  logo: {
+    width: "clamp(75px, 12vw, 100px)", // Menyesuaikan ukuran layar HP s/d PC otomatis
+    height: "auto",
+    display: "block",
+    margin: "0 auto 15px auto",
+    filter: "drop-shadow(0 0 8px rgba(212, 175, 55, 0.4))"
+  },
   title: {
-    color: "white",
-    fontSize: "36px"
+    color: "#d4af37", // Aksen Emas Taktis Khas TNI AD
+    fontSize: "clamp(20px, 3.5vw, 32px)", 
+    textAlign: "center",
+    margin: "0 0 5px 0",
+    fontWeight: "bold",
+    letterSpacing: "1px"
   },
-
   subtitle: {
     color: "#8dc59d",
-    marginBottom: "30px"
+    textAlign: "center",
+    marginBottom: "30px",
+    fontSize: "clamp(12px, 2vw, 16px)",
+    letterSpacing: "1px"
   },
-
   grid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    // OTOMATIS RESPONSIVE: Jika sisa ruang layar di bawah 260px (lebar HP), layout otomatis patah jadi 1 kolom ke bawah
+    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", 
     gap: "20px"
   },
-
-  input: {
-    padding: "18px",
-    borderRadius: "15px",
-    border: "none",
-    background: "rgba(255,255,255,0.08)",
-    color: "white",
-    fontSize: "15px"
+  inputGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px"
   },
-
+  label: {
+    color: "#8dc59d",
+    fontSize: "11px",
+    fontWeight: "bold",
+    letterSpacing: "1px"
+  },
+  input: {
+    padding: "15px",
+    borderRadius: "8px",
+    border: "1px solid #3c6346",
+    background: "#0d1812",
+    color: "white",
+    fontSize: "15px",
+    outline: "none",
+    boxSizing: "border-box",
+    width: "100%"
+  },
+  select: {
+    padding: "15px",
+    borderRadius: "8px",
+    border: "1px solid #3c6346",
+    background: "#0d1812",
+    color: "white",
+    fontSize: "15px",
+    outline: "none",
+    boxSizing: "border-box",
+    width: "100%",
+    cursor: "pointer"
+  },
   button: {
     width: "100%",
     marginTop: "30px",
-    padding: "18px",
-    borderRadius: "18px",
+    padding: "16px",
+    borderRadius: "8px",
     border: "none",
-    background: "#1f7a4f",
-    color: "white",
-    fontSize: "18px",
+    background: "#d4af37", // Tombol warna Gold matte eksekusi komando
+    color: "#0a120d",
+    fontSize: "16px",
     fontWeight: "bold",
-    cursor: "pointer"
+    cursor: "pointer",
+    letterSpacing: "1px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+    transition: "background 0.2s"
   },
-
   resultBox: {
     marginTop: "30px",
     display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
+    // Hasil otomatis menyesuaikan: 3 kolom di PC, 1 atau 2 kolom vertikal di HP
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", 
     gap: "20px"
   },
-
   resultItem: {
-    background: "rgba(255,255,255,0.08)",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.1)",
     padding: "20px",
-    borderRadius: "20px",
+    borderRadius: "12px",
     color: "white",
-    textAlign: "center"
+    textAlign: "center",
+    boxSizing: "border-box"
+  },
+  resultHeader: {
+    margin: "0 0 10px 0",
+    fontSize: "13px",
+    color: "#8dc59d",
+    letterSpacing: "1px"
+  },
+  resultText: {
+    margin: 0,
+    fontSize: "18px",
+    fontWeight: "bold"
+  },
+  footer: {
+    color: "#55725c",
+    textAlign: "center",
+    marginTop: "40px",
+    fontSize: "11px",
+    letterSpacing: "1px",
+    borderTop: "1px solid #1a3022",
+    paddingTop: "15px"
   }
 };
