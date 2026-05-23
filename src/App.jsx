@@ -41,28 +41,36 @@ export default function App() {
     return "PROGRAM PENURUNAN BB";
   };
 
-  // REFERENSI UTAMA DARI RUMUS SPREADSHEET ANDA
-  // IF(G10:G-(24.5*((F10:F/100)^2))>0 ; G10:G-(24.5*((F10:F/100)^2)) ; 0)
   const hitungKelebihanBB = () => {
     if (!form.tb || !form.bb) return 0;
     const tmMeter = form.tb / 100;
-    const bbMaksimalNormal = 24.5 * (tmMeter * tmMeter); // Batas aman IMT 24.5
+    const bbMaksimalNormal = 24.5 * (tmMeter * tmMeter); 
     const selisih = form.bb - bbMaksimalNormal;
+    return selisih > 0 ? selisih.toFixed(1) : 0;
+  };
+
+  // FUNGSI BARU: Menghitung kekurangan berat badan untuk personel Underweight
+  const hitungKekuranganBB = () => {
+    if (!form.tb || !form.bb) return 0;
+    const tmMeter = form.tb / 100;
+    const bbMinimalNormal = 18.5 * (tmMeter * tmMeter); // Batas bawah IMT normal
+    const selisih = bbMinimalNormal - form.bb;
     return selisih > 0 ? selisih.toFixed(1) : 0;
   };
 
   const kataPenyemangat = () => {
     const klas = klasifikasi();
     const overKg = hitungKelebihanBB();
+    const underKg = hitungKekuranganBB();
     switch (klas) {
       case "NORMAL":
         return "LUAR BIASA! PERTAHANKAN FISIK PRIMA ANDA UNTUK SELALU SIAP MENJALANKAN TUGAS POKOK SATUAN!";
       case "UNDERWEIGHT":
-        return "TETAP SEMANGAT! TINGKATKAN ASUPAN NUTRISI DAN LATIHAN BEBAN AGAR MENCAPAI BERAT BADAN IDEAL PRAJURIT.";
+        return `TETAP SEMANGAT! ANDA KEKURANGAN SEKITAR ${underKg.replace(".", ",")} KG. TINGKATKAN ASUPAN NUTRISI DAN LATIHAN BEBAN AGAR MENCAPAI BERAT BADAN IDEAL PRAJURIT.`;
       case "OVERWEIGHT":
-        return `SIAP BINA FISIK! ANDA MEMILIKI KELEBIHAN SEKITAR ${overKg} KG. TINGKATKAN INTENSITAS KARDIO, KURANGI PORSINYA, DAN KEMBALIKAN POSTUR IDEALMU.`;
+        return `SIAP BINA FISIK! ANDA MEMILIKI KELEBIHAN SEKITAR ${overKg.replace(".", ",")} KG. TINGKATKAN INTENSITAS KARDIO, KURANGI PORSINYA, DAN KEMBALIKAN POSTUR IDEALMU.`;
       case "OBESITAS":
-        return `PERINTAH KOMANDO: JAGA KESEHATAN, ANDA HARUS MENURUNKAN BERAT BADAN MINIMAL ${overKg} KG. JALANKAN PROGRAM PENURUNAN BB SECARA DISIPLIN DAN TERUKUR. ANDA PASTI BISA!`;
+        return `PERINTAH KOMANDO: JAGA KESEHATAN, ANDA HARUS MENURUNKAN BERAT BADAN MINIMAL ${overKg.replace(".", ",")} KG. JALANKAN PROGRAM PENURUNAN BB SECARA DISIPLIN DAN TERUKUR. ANDA PASTI BISA!`;
       default:
         return "";
     }
@@ -231,7 +239,7 @@ export default function App() {
             <div style={styles.resultBox}>
               <div style={styles.resultItem}>
                 <h3 style={styles.resultHeader}>IMT</h3>
-                <p style={styles.resultText}>{hitungIMT()}</p>
+                <p style={styles.resultText}>{hitungIMT().toString().replace(".", ",")}</p>
               </div>
 
               <div style={styles.resultItem}>
@@ -248,7 +256,24 @@ export default function App() {
                 <p style={styles.resultText}>{status()}</p>
               </div>
 
-              {/* INTEGRASI KOTAK BARU KELEBIHAN BB */}
+              {/* 1. KOTAK TARGET BB IDEAL (Selalu muncul untuk semua kategori) */}
+              <div style={{
+                ...styles.resultItem,
+                background: "rgba(31, 122, 79, 0.15)",
+                border: "1px solid #288555"
+              }}>
+                <h3 style={{...styles.resultHeader, color: "#a3dbb7"}}>BB IDEAL (TARGET)</h3>
+                <p style={{...styles.resultText, color: "#a3dbb7"}}>
+                  {(() => {
+                    const tmMeter = form.tb / 100;
+                    const bbMin = (18.5 * (tmMeter * tmMeter)).toFixed(1).replace(".", ",");
+                    const bbMax = (24.5 * (tmMeter * tmMeter)).toFixed(1).replace(".", ",");
+                    return `${bbMin} - ${bbMax} KG`;
+                  })()}
+                </p>
+              </div>
+
+              {/* 2. KOTAK KONDISIONAL: KELEBIHAN BB (Hanya muncul jika Overweight/Obesitas) */}
               {parseFloat(hitungKelebihanBB()) > 0 && (
                 <div style={{
                   ...styles.resultItem,
@@ -257,7 +282,19 @@ export default function App() {
                   boxShadow: "0 0 10px rgba(212, 175, 55, 0.1)"
                 }}>
                   <h3 style={{...styles.resultHeader, color: "#e5c158"}}>KELEBIHAN BB</h3>
-                  <p style={{...styles.resultText, color: "#e5c158"}}>{hitungKelebihanBB()} KG</p>
+                  <p style={{...styles.resultText, color: "#e5c158"}}>{hitungKelebihanBB().toString().replace(".", ",")} KG</p>
+                </div>
+              )}
+
+              {/* 3. KOTAK KONDISIONAL: KEKURANGAN BB (Hanya muncul jika Underweight) */}
+              {klasifikasi() === "UNDERWEIGHT" && (
+                <div style={{
+                  ...styles.resultItem,
+                  background: "rgba(52, 152, 219, 0.23)",
+                  border: "1px solid #3498db"
+                }}>
+                  <h3 style={{...styles.resultHeader, color: "#5dade2"}}>KEKURANGAN BB</h3>
+                  <p style={{...styles.resultText, color: "#5dade2"}}>{hitungKekuranganBB().toString().replace(".", ",")} KG</p>
                 </div>
               )}
             </div>
@@ -381,7 +418,6 @@ const styles = {
   resultBox: {
     marginTop: "30px",
     display: "grid",
-    // Otomatis menyesuaikan jumlah kolom (grid-items) biar simetris saat kotak ke-4 muncul
     gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", 
     gap: "20px"
   },
