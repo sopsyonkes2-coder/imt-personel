@@ -41,14 +41,29 @@ export default function App() {
     return "PROGRAM PENURUNAN BB";
   };
 
+  const kataPenyemangat = () => {
+    const klas = klasifikasi();
+    switch (klas) {
+      case "NORMAL":
+        return "LUAR BIASA! PERTAHANKAN FISIK PRIMA ANDA UNTUK SELALU SIAP MENJALANKAN TUGAS POKOK SATUAN!";
+      case "UNDERWEIGHT":
+        return "TETAP SEMANGAT! TINGKATKAN ASUPAN NUTRISI DAN LATIHAN BEBAN AGAR MENCAPAI BERAT BADAN IDEAL PRAJURIT.";
+      case "OVERWEIGHT":
+        return "SIAP BINA FISIK! TINGKATKAN INTENSITAS KARDIO, KURANGI PORSINYA, DAN KEMBALIKAN POSTUR IDEALMU.";
+      case "OBESITAS":
+        return "PERINTAH KOMANDO: JAGA KESEHATAN, JALANKAN PROGRAM PENURUNAN BB SECARA DISIPLIN DAN TERUKUR. ANDA PASTI BISA!";
+      default:
+        return "";
+    }
+  };
+
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Mencegah reload halaman & mengaktifkan validasi 'required' browser
+    e.preventDefault(); 
     setLoading(true);
 
     const SPREADSHEET_URL = "https://script.google.com/macros/s/AKfycbztod5urUj4ol4IUqDFgQ4tl7xuW-lE_laMzc8YHr5UAdNGGKSTYMq5YCFwu9dTke4p5A/exec";
 
     try {
-      // Mengirimkan data dengan fetch API agar validasi form wajib isi berjalan sempurna
       await fetch(SPREADSHEET_URL, {
         method: "POST",
         mode: "no-cors",
@@ -78,13 +93,11 @@ export default function App() {
     <div style={styles.body}>
       <div style={styles.card}>
         
-        {/* LOGO SATUAN YONKES 2 KOSTRAD */}
         <img 
           src="/logo.png" 
           alt="Logo Yonkes 2" 
           style={styles.logo} 
           onError={(e) => {
-            // Jika file logo.png belum dimasukkan ke folder public, gambar rusak otomatis disembunyikan
             e.target.style.display = 'none';
           }}
         />
@@ -92,7 +105,6 @@ export default function App() {
         <h1 style={styles.title}>APLIKASI IMT PERSONEL</h1>
         <p style={styles.subtitle}>SOPS YONKES 2/YBH/2 KOSTRAD</p>
 
-        {/* RE-ARSITEKTUR FORM DENGAN VALIDASI WAJIB ISI */}
         <form id="imtForm" onSubmit={handleSubmit}>
           <div style={styles.grid}>
             
@@ -119,42 +131,28 @@ export default function App() {
                 required
               >
                 <option value="">-- Pilih Pangkat --</option>
-                <optgroup label="PERWIRA TINGGI">
-                  <option value="JENDERAL">JENDERAL</option>
-                  <option value="LETJEN">LETJEN</option>
-                  <option value="MAYJEN">MAYJEN</option>
-                  <option value="BRIGJEN">BRIGJEN</option>
-                </optgroup>
-                <optgroup label="PERWIRA MENENGAH">
-                  <option value="KOLONEL">KOLONEL</option>
-                  <option value="LETKOL">LETKOL</option>
-                  <option value="MAYOR">MAYOR</option>
-                </optgroup>
-                <optgroup label="PERWIRA PERTAMA">
-                  <option value="KAPTEN">KAPTEN</option>
-                  <option value="LETTU">LETTU</option>
-                  <option value="LETDA">LETDA</option>
-                </optgroup>
-                <optgroup label="BINTARA TINGGI">
-                  <option value="PELTU">PELTU</option>
-                  <option value="PELDA">PELDA</option>
-                </optgroup>
-                <optgroup label="BINTARA">
-                  <option value="SERMA">SERMA</option>
-                  <option value="SERKA">SERKA</option>
-                  <option value="SERTU">SERTU</option>
-                  <option value="SERDA">SERDA</option>
-                </optgroup>
-                <optgroup label="TAMTAMA KEPALA">
-                  <option value="KOPKA">KOPKA</option>
-                  <option value="KOPTU">KOPTU</option>
-                  <option value="KOPDA">KOPDA</option>
-                </optgroup>
-                <optgroup label="TAMTAMA">
-                  <option value="PRAKA">PRAKA</option>
-                  <option value="PRATU">PRATU</option>
-                  <option value="PRADA">PRADA</option>
-                </optgroup>
+                <option value="JENDERAL">JENDERAL</option>
+                <option value="LETJEN">LETJEN</option>
+                <option value="MAYJEN">MAYJEN</option>
+                <option value="BRIGJEN">BRIGJEN</option>
+                <option value="KOLONEL">KOLONEL</option>
+                <option value="LETKOL">LETKOL</option>
+                <option value="MAYOR">MAYOR</option>
+                <option value="KAPTEN">KAPTEN</option>
+                <option value="LETTU">LETTU</option>
+                <option value="LETDA">LETDA</option>
+                <option value="PELTU">PELTU</option>
+                <option value="PELDA">PELDA</option>
+                <option value="SERMA">SERMA</option>
+                <option value="SERKA">SERKA</option>
+                <option value="SERTU">SERTU</option>
+                <option value="SERDA">SERDA</option>
+                <option value="KOPKA">KOPKA</option>
+                <option value="KOPTU">KOPTU</option>
+                <option value="KOPDA">KOPDA</option>
+                <option value="PRAKA">PRAKA</option>
+                <option value="PRATU">PRATU</option>
+                <option value="PRADA">PRADA</option>
               </select>
             </div>
 
@@ -217,31 +215,39 @@ export default function App() {
           </button>
         </form>
 
-        {/* PANEL HASIL RESPONSIVE */}
         {showResult && (
-          <div style={styles.resultBox}>
-            <div style={styles.resultItem}>
-              <h3 style={styles.resultHeader}>IMT</h3>
-              <p style={styles.resultText}>{hitungIMT()}</p>
-            </div>
+          <div>
+            <div style={styles.resultBox}>
+              <div style={styles.resultItem}>
+                <h3 style={styles.resultHeader}>IMT</h3>
+                <p style={styles.resultText}>{hitungIMT()}</p>
+              </div>
 
-            <div style={styles.resultItem}>
-              <h3 style={styles.resultHeader}>KLASIFIKASI</h3>
-              <p style={styles.resultText}>{klasifikasi()}</p>
+              <div style={styles.resultItem}>
+                <h3 style={styles.resultHeader}>KLASIFIKASI</h3>
+                <p style={styles.resultText}>{klasifikasi()}</p>
+              </div>
+
+              <div style={{
+                ...styles.resultItem,
+                background: klasifikasi() === "NORMAL" ? "rgba(31, 122, 79, 0.4)" : "rgba(196, 43, 43, 0.4)",
+                border: klasifikasi() === "NORMAL" ? "1px solid #1f7a4f" : "1px solid #c42b2b"
+              }}>
+                <h3 style={styles.resultHeader}>STATUS</h3>
+                <p style={styles.resultText}>{status()}</p>
+              </div>
             </div>
 
             <div style={{
-              ...styles.resultItem,
-              background: klasifikasi() === "NORMAL" ? "rgba(31, 122, 79, 0.4)" : "rgba(196, 43, 43, 0.4)",
-              border: klasifikasi() === "NORMAL" ? "1px solid #1f7a4f" : "1px solid #c42b2b"
+              ...styles.motivationBox,
+              borderLeft: klasifikasi() === "NORMAL" ? "4px solid #1f7a4f" : "4px solid #d4af37"
             }}>
-              <h3 style={styles.resultHeader}>STATUS</h3>
-              <p style={styles.resultText}>{status()}</p>
+              <span style={styles.motivationLabel}>PESAN/REKOMENDASI:</span>
+              <p style={styles.motivationText}>"{kataPenyemangat()}"</p>
             </div>
           </div>
         )}
 
-        {/* FOOTER COPYRIGHT SOPS YONKES 2 */}
         <div style={styles.footer}>
           © 2026 SOPS YONKES 2/YBH/2 KOSTRAD. ALL RIGHTS RESERVED.
         </div>
@@ -251,7 +257,6 @@ export default function App() {
   );
 }
 
-// ARSITEKTUR LAYOUT MODERN MILITARY (FULL RESPONSIVE PC & MOBILE)
 const styles = {
   body: {
     minHeight: "100vh",
@@ -260,7 +265,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     padding: "4vw 20px", 
-    fontFamily: '"Courier New", Courier, monospace, sans-serif', // Gaya display tactical monitor
+    fontFamily: '"Courier New", Courier, monospace, sans-serif',
     boxSizing: "border-box"
   },
   card: {
@@ -268,20 +273,20 @@ const styles = {
     maxWidth: "850px",
     background: "rgba(15, 27, 20, 0.92)",
     borderRadius: "20px",
-    padding: "clamp(20px, 4vw, 40px)", // Fleksibel: mengecil di HP, melebar di PC
+    padding: "clamp(20px, 4vw, 40px)", 
     border: "2px solid #3c6346",
     boxShadow: "0 0 25px rgba(0, 255, 80, 0.15)",
     boxSizing: "border-box"
   },
   logo: {
-    width: "clamp(75px, 12vw, 100px)", // Menyesuaikan ukuran layar HP s/d PC otomatis
+    width: "clamp(75px, 12vw, 100px)", 
     height: "auto",
     display: "block",
     margin: "0 auto 15px auto",
     filter: "drop-shadow(0 0 8px rgba(212, 175, 55, 0.4))"
   },
   title: {
-    color: "#d4af37", // Aksen Emas Taktis Khas TNI AD
+    color: "#d4af37", 
     fontSize: "clamp(20px, 3.5vw, 32px)", 
     textAlign: "center",
     margin: "0 0 5px 0",
@@ -297,7 +302,6 @@ const styles = {
   },
   grid: {
     display: "grid",
-    // OTOMATIS RESPONSIVE: Jika sisa ruang layar di bawah 260px (lebar HP), layout otomatis patah jadi 1 kolom ke bawah
     gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", 
     gap: "20px"
   },
@@ -341,7 +345,7 @@ const styles = {
     padding: "16px",
     borderRadius: "8px",
     border: "none",
-    background: "#d4af37", // Tombol warna Gold matte eksekusi komando
+    background: "#d4af37", 
     color: "#0a120d",
     fontSize: "16px",
     fontWeight: "bold",
@@ -353,7 +357,6 @@ const styles = {
   resultBox: {
     marginTop: "30px",
     display: "grid",
-    // Hasil otomatis menyesuaikan: 3 kolom di PC, 1 atau 2 kolom vertikal di HP
     gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", 
     gap: "20px"
   },
@@ -376,6 +379,29 @@ const styles = {
     margin: 0,
     fontSize: "18px",
     fontWeight: "bold"
+  },
+  motivationBox: {
+    marginTop: "20px",
+    background: "rgba(20, 38, 26, 0.6)",
+    padding: "18px 20px",
+    borderRadius: "8px",
+    boxSizing: "border-box"
+  },
+  motivationLabel: {
+    color: "#8dc59d",
+    fontSize: "11px",
+    fontWeight: "bold",
+    display: "block",
+    marginBottom: "5px",
+    letterSpacing: "1px"
+  },
+  motivationText: {
+    color: "#ffffff",
+    fontSize: "14px",
+    margin: 0,
+    lineHeight: "1.5",
+    fontStyle: "italic",
+    letterSpacing: "0.5px"
   },
   footer: {
     color: "#55725c",
